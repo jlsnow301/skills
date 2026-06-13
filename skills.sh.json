@@ -1,0 +1,11 @@
+{
+  "$schema": "https://www.skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Jotai Docs",
+      "description": "Uses the official Jotai docs",
+      "skills": ["skills/jotai"]
+    }
+  ]
+}
