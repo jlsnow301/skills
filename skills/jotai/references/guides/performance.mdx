@@ -1,0 +1,146 @@
+---
+title: Performance
+description: How to limit extra re-renders
+nav: 8.08
+keywords: performance
+---
+
+**Note**: This guide has room for improvement. Consider it as FYI for now.
+
+Jotai & React gives us quite a few tools to manage the re-renders that happen in the app lifecycle.
+First, please read about the difference [between render & commit](https://legacy.reactjs.org/blog/2018/09/10/introducing-the-react-profiler.html#browsing-commits), because that's very important to understand before going further.
+
+### Cheap renders
+
+As seen in the [core section](../core/atom.mdx), due to React 18 default behaviour (but overall good practice), you have to make sure your component functions are _idempotent_.
+They will be called multiple times during the render phase, even at mount. So we need to keep our renders cheap at all cost!
+
+#### Heavy computation
+
+Always make heavy computation outside of the React lifecycle (in actions for example)
+
+Dont's:
+
+```js
+// Heavy computation for each item
+const selector = (s) => s.filter(heavyComputation)
+const Profile = () => {
+  const [computed] = useAtom(selectAtom(friendsAtom, selector))
+}
+```
+
+Do's:
+
+```js
+const friendsAtom = atom([])
+const fetchFriendsAtom = atom(null, async (get, set, payload) => {
+  // Fetch all friends
+  const res = await fetch('https://jsonplaceholder.typicode.com/users')
+  const data = await res.json()
+
+  // Make heavy computation once only
+  const computed = data.filter(heavyComputation)
+  set(friendsAtom, computed)
+})
+// Usage in components
+const Profile = () => {
+  const [friends] = useAtom(friendsAtom)
+}
+```
+
+#### Small components
+
+Observed atoms should only re-render small parts of your application that required an update. The less comparison React has to make, the shorter your render time will be.
+
+Dont's:
+
+```jsx
+const Profile = () => {
+  const [name] = useAtom(nameAtom)
+  const [age] = useAtom(ageAtom)
+  return (
+    <>
+      <div>{name}</div>
+      <div>{age}</div>
+    </>
+  )
+}
+```
+
+Do's:
+
+```jsx
+const NameComponent = () => {
+  const [name] = useAtom(nameAtom)
+  return <div>{name}</div>
+}
+const AgeComponent = () => {
+  const [age] = useAtom(ageAtom)
+  return <div>{age}</div>
+}
+const Profile = () => {
+  return (
+    <>
+      <NameComponent />
+      <AgeComponent />
+    </>
+  )
+}
+```
+
+### Render on demand
+
+Usually, the main performance overhead will come from re-rendering parts of your app that did not need to, or way more than they should.
+
+We have a few tools to deal with "when" React should render our components. If you have not seen the usage of `useMemo` and `useCallback`, please check the official React documentation for more info before going further.
+They are of great use to reduce un-necessary renders where your app is not fluid.
+
+But Jotai also provides its set of tools to handle the "when" our atoms should trigger a re-render.
+
+- Out of the box, Jotai encourages you to split your data into atomic parts, hence each atom is stored separately and will only trigger a re-render when their own value change
+- `selectAtom` allows you to subscribe to specific part of a large object and only re-render on value change
+- `focusAtom` same as selectAtom, but creating a new atom for the part, giving a setter to update that specific part easily
+- `splitAtom` does the work of selectAtom/focusAtom for a dynamic list
+
+While this seems simplistic, it is simple to reason about. That was the goal, let's keep it simple to keep it fast.
+
+#### Frequent or rare updates
+
+Ask yourself whether your atom is usually going to be frequently update or more rarely.
+Let's imagine an atom containing an object that changes almost every second, it may not be best suited to "focus" on a specific properties of this object using `focusAtom`, because anyway they will all re-render in the same time, so best adding no overhead and not create any more atoms.
+
+On the other hand, if your object has properties that rarely change, and most importantly, that change independently from the other properties, then you may want to use `focusAtom` or `selectAtom` to prevent un-necessary renders.
+
+### Dependency graph depth
+
+Jotai computes a derived atom by running its read function and synchronously reading each dependency it `get`s, which in turn reads _their_ dependencies. This recursion runs on the JavaScript call stack, so the **depth** of a dependency chain is bounded by the engine's stack size, typically a few thousand levels depending on the engine and how much work each read does.
+
+This is almost never a problem, because real graphs are _wide_ rather than _deep_: an atom usually depends on a handful of others, not on a chain thousands of atoms long. Breadth is essentially unlimited; only chain length matters.
+
+You can hit the limit by accident if you model a collection as a chain of derived atoms (each atom deriving from the previous one) instead of as data inside a single atom. Reading the end of a long enough chain throws a `RangeError: Maximum call stack size exceeded` (or `too much recursion` on Firefox). As of v2, this surfaces at the call site that triggered the read, rather than being silently swallowed, so you find out immediately instead of getting a corrupted graph.
+
+Dont's:
+
+```js
+// A linear chain: each atom depends on the previous one. Reading `last`
+// recurses once per link, so a few thousand items can overflow the stack.
+let prev = atom(0)
+for (const value of veryLongList) {
+  const node = prev
+  prev = atom((get) => get(node) + value)
+}
+const last = prev
+```
+
+Do's:
+
+```js
+// Keep the collection in one atom and derive over it in a single read.
+// The depth is constant (1) no matter how long the list is.
+const listAtom = atom(veryLongList)
+const totalAtom = atom((get) => get(listAtom).reduce((a, b) => a + b, 0))
+```
+
+For a dynamic list whose items each need to be their own atom (for example, to render and update rows independently), reach for `splitAtom` rather than chaining. It gives you one atom per item that all derive directly from the source atom, so the graph stays one level deep instead of growing with the list.
+
+If you genuinely need a deep computation, run it as a plain reduction inside a single atom's read (or in a write action) rather than spreading it across many chained atoms.

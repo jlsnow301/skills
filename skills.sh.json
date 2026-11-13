@@ -4,7 +4,7 @@
   "groupings": [
     {
       "title": "Jotai Docs",
-      "description": "Uses the official Jotai docs",
+      "description": "Agent skill derived from the current official Jotai v3 documentation. Not affiliated with Jotai. Official website: https://jotai.org",
       "skills": ["skills/jotai"]
     }
   ]
