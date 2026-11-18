@@ -1,0 +1,26 @@
+name: Oxfmt
+
+on:
+    pull_request:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    oxfmt:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 24
+
+            - name: Install Oxfmt
+              run: npm install --global oxfmt@0.79.0
+
+            - name: Check formatting
+              run: oxfmt --check .
