@@ -3,51 +3,54 @@ name: jotai
 description: Build, review, debug, or migrate React state with Jotai v3. Use for v3 atoms, hooks, Provider and stores, async and Suspense, SSR, persistence, utilities, performance, TypeScript, testing, or integrations.
 ---
 
-# Jotai v3
+# Jotai v3 documentation router
 
-This skill covers Jotai v3 only. Consult the official docs for v2.
+This skill routes Jotai tasks to bundled official documentation. Jotai is an
+atom-based state management library for React: small pieces of source state can
+be shared between components, combined into derived values, and updated through
+explicit actions. Use it for shared client state, computed state, async reads,
+and state that needs persistence or an isolated store.
 
-## Workflow
+The skill provides a task-to-document map, not a replacement API manual or a
+prescribed application architecture. Its references cover core APIs, utilities,
+recipes, integrations, and migration guidance. Start with the matching route
+below, read only the relevant pages, and use those pages to guide implementation,
+review, or debugging in the project's existing patterns.
 
-1. Confirm the project uses Jotai v3; inspect its React version, dependencies,
-   store boundaries, and existing patterns before changing code.
-2. Model independent source state with primitive atoms, calculations with
-   read-only derived atoms, and coordinated actions with writable atoms. Do not
-   duplicate derivable state without a reason.
-3. Use the existing store scope. Provider-less mode uses a default store;
-   `<Provider>` or an explicit `createStore()` isolates subtrees, tests, and
-   server requests. Keep server state isolated between requests.
-4. Choose the simplest hooks and utilities for the behavior. Read the relevant
-   reference below before applying advanced APIs.
-5. Verify user-visible behavior in the project's existing test and runtime
-   setup, including isolation, async states, and persistence when applicable.
+This skill covers **Jotai v3 only**. Confirm the installed version before using
+it; consult the official docs for v2. Bundled third-party packages are optional,
+not dependencies to introduce by default.
 
-## Design rules
+## Example tasks and where to start
 
-- An atom is a config; its value belongs to a store. Define atoms outside render
-  or memoize dynamically created atoms with stable dependencies.
-- `get` in a read function tracks dependencies; `get` in a write function does
-  not. Use writable derived or write-only atoms for actions.
-- Use `useAtomValue` for readers and `useSetAtom` for write-only consumers; use
-  `useAtom` when both are needed. Split subscriptions where measurement warrants
-  it; prefer normal derived atoms before `selectAtom`.
-- Async reads suspend with normal hooks. Provide Suspense and error boundaries
-  where appropriate, and pass the supplied abort signal to cancellable work.
-- For persisted state, account for storage availability, hydration mismatches,
-  cross-tab updates, and invalid or untrusted stored values.
-- Preserve TypeScript inference; avoid casts that obscure atom write arguments.
-  Keep render work cheap and avoid deep chains of derived atoms.
+| Example                                                                                                                                    | Read first                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| Use Jotai to share a shopping cart between unrelated components and derive its total without storing a second copy of that total.          | `references/core/atom.mdx`, `references/core/use-atom.mdx`                                               |
+| Use Jotai to coordinate search filters and pagination through a single write action while components subscribe to the values they display. | `references/core/atom.mdx`, `references/guides/composing-atoms.mdx`                                      |
+| Use an async atom to load details for the selected item and show pending content through React Suspense.                                   | `references/guides/async.mdx`, `references/core/use-atom.mdx`                                            |
+| Persist a user's theme preference in browser storage while accounting for server rendering and hydration.                                  | `references/utilities/storage.mdx`, `references/utilities/ssr.mdx`                                       |
+| Give each editor instance its own state, or isolate server requests, using a Provider and the appropriate store scope.                     | `references/core/provider.mdx`, `references/core/store.mdx`, `references/utilities/ssr.mdx`              |
+| Investigate unnecessary list rerenders before deciding whether derived atoms, selective subscriptions, or split atoms are appropriate.     | `references/guides/performance.mdx`, `references/utilities/select.mdx`, `references/utilities/split.mdx` |
+| Migrate an existing Jotai application to v3 by checking compatibility requirements and changed APIs against its actual usage.              | `references/guides/migrating-to-v3.mdx`                                                                  |
 
-## Jotai v3 requirements
+Jotai is not required for every React state value; keep component-local state
+local when sharing or composing it would add no value. For an existing codebase,
+preserve its state ownership and store boundaries unless the task calls for a
+change.
 
-- v3 requires React 18+, TypeScript 5.5+, and Node.js 22.12+; it is ESM-only
-  with public entry-point exports. Confirm compatibility before migrating.
-- Import `atomFamily` from `jotai-family` and Babel plugins from `jotai-babel`.
-  `loadable` and `setSelf` are unavailable; consult the migration guide when
-  upgrading existing code.
-- v3 `useAtomValue` may miss updates between initial render and subscription;
-  the advanced `useAtomValueRawSync` avoids that window but does not unwrap
-  promises and uses synchronous rendering. Choose it only if appropriate.
+## Routing workflow
+
+1. Inspect the project's Jotai version, dependencies, existing atoms, and store
+   boundaries; identify whether the task is implementation, debugging, review,
+   migration, or performance work.
+2. Choose the closest example above or a topic in the reference index below.
+   Read the relevant core page before a recipe or extension that builds on it.
+3. Follow links to additional bundled pages only when the task needs them.
+   Check package names, compatibility, and API signatures in the references
+   rather than treating an example as a complete specification.
+4. Apply the smallest appropriate change and verify the requested behavior in
+   the project's existing test and runtime setup. Include isolation, async
+   states, or persistence checks when those behaviors are involved.
 
 ## References
 
