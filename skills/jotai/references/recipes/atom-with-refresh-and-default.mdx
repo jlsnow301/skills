@@ -11,8 +11,8 @@ keywords: creators,refresh,default
 As you can see in the example code in atomWithDefault section, the two atoms' relation is disconnected after updating created one, `count2Atom = atomWithDefault((get) => get(count1Atom) * 2)`.
 Let's confirm what's occurred,
 
-- 1. Click "increment count1", then count1 is 2 and count2 is 4
-- 2. Click "increment count2", then count1 is 2 and count2 is 5 (Disconnected!!)
+-   1. Click "increment count1", then count1 is 2 and count2 is 4
+-   2. Click "increment count2", then count1 is 2 and count2 is 5 (Disconnected!!)
 
 Those atoms have no relation after updating count2Atom. So,
 

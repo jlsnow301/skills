@@ -1,11 +1,11 @@
 {
-  "$schema": "https://www.skills.sh/schemas/skills.sh.schema.json",
-  "notGrouped": "bottom",
-  "groupings": [
-    {
-      "title": "Jotai Docs",
-      "description": "Agent skill for using Jotai state manager. References official Jotai v3 documentation. Not affiliated with Jotai. Official website: https://jotai.org",
-      "skills": ["skills/jotai"]
-    }
-  ]
+	"$schema": "https://www.skills.sh/schemas/skills.sh.schema.json",
+	"notGrouped": "bottom",
+	"groupings": [
+		{
+			"title": "Jotai Docs",
+			"description": "Agent skill for using Jotai state manager. References official Jotai v3 documentation. Not affiliated with Jotai. Official website: https://jotai.org",
+			"skills": ["skills/jotai"]
+		}
+	]
 }
