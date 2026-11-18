@@ -1,4 +1,4 @@
-name: Oxfmt
+name: format
 
 on:
     pull_request:
@@ -8,7 +8,7 @@ on:
     workflow_dispatch:
 
 jobs:
-    oxfmt:
+    format:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout
